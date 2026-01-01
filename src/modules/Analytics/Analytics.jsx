@@ -30,14 +30,16 @@ const Analytics = () => {
   const monthlyChange = getMonthlyChange();
   const avgWeeklyLoss = getAverageWeightLoss();
 
-  // Use useMemo to calculate data only when weightData changes
   const weeklyBreakdown = useMemo(() => {
-    if (weightData.length < 2) return [];
+    if (weightData.length < 2) {
+      return [];
+    }
     
     const weeks = [];
     let currentWeek = [];
     
-    weightData.forEach((entry, idx) => {
+    for (let idx = 0; idx < weightData.length; idx++) {
+      const entry = weightData[idx];
       currentWeek.push(entry);
       
       if (currentWeek.length === 7 || idx === weightData.length - 1) {
@@ -55,46 +57,52 @@ const Analytics = () => {
         
         currentWeek = [];
       }
-    });
+    }
     
     return weeks;
   }, [weightData]);
 
   const monthlyReport = useMemo(() => {
-    if (weightData.length === 0) return [];
+    if (weightData.length === 0) {
+      return [];
+    }
     
     const firstDate = parseISO(weightData[0].date);
     const lastDate = parseISO(weightData[weightData.length - 1].date);
-    
     const months = eachMonthOfInterval({ start: firstDate, end: lastDate });
     
-    return months.map(monthDate => {
+    const report = months.map((monthDate) => {
       const monthStr = format(monthDate, 'MMM yyyy');
       const monthStart = startOfMonth(monthDate);
       const monthEnd = endOfMonth(monthDate);
       
-      const entriesInMonth = weightData.filter(entry => {
+      const entriesInMonth = weightData.filter((entry) => {
         const entryDate = parseISO(entry.date);
         return entryDate >= monthStart && entryDate <= monthEnd;
       });
       
-      if (entriesInMonth.length === 0) return null;
+      if (entriesInMonth.length === 0) {
+        return null;
+      }
       
       const startWeight = entriesInMonth[0].weight;
       const endWeight = entriesInMonth[entriesInMonth.length - 1].weight;
       const change = (endWeight - startWeight).toFixed(1);
-      const avgWeight = (entriesInMonth.reduce((sum, e) => sum + e.weight, 0) / entriesInMonth.length).toFixed(1);
+      const sumWeight = entriesInMonth.reduce((sum, e) => sum + e.weight, 0);
+      const avgWeight = (sumWeight / entriesInMonth.length).toFixed(1);
       
       return {
         month: monthStr,
-        startWeight,
-        endWeight,
+        startWeight: startWeight,
+        endWeight: endWeight,
         avgWeight: parseFloat(avgWeight),
         change: parseFloat(change),
         entries: entriesInMonth.length,
         color: change < 0 ? '#10b981' : change > 0 ? '#ef4444' : '#6b7280'
       };
-    }).filter(Boolean);
+    });
+    
+    return report.filter(Boolean);
   }, [weightData]);
 
   const totalEntries = weightData.length;
