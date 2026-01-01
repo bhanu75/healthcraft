@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BarChart3, TrendingDown, Target, Activity, Calendar as CalendarIcon, Download } from 'lucide-react';
+import { BarChart3, TrendingDown, Target, Activity, Calendar as CalendarIcon } from 'lucide-react';
 import useAppStore from '../../store/useAppStore';
 import StatsCard from '../../components/StatsCard';
 import { 
@@ -26,12 +26,14 @@ const Analytics = () => {
     getStartWeight
   } = useAppStore();
 
-  const [viewMode, setViewMode] = useState('weekly'); // 'weekly' or 'monthly'
+  const [viewMode, setViewMode] = useState('weekly');
 
   const weeklyChange = getWeeklyChange();
   const monthlyChange = getMonthlyChange();
   const avgWeeklyLoss = getAverageWeightLoss();
 
+  // ✅ DEFINE FUNCTIONS FIRST (before using them)
+  
   // Calculate weekly breakdown with month labels
   const getWeeklyBreakdown = () => {
     if (weightData.length < 2) return [];
@@ -100,6 +102,7 @@ const Analytics = () => {
     }).filter(Boolean);
   };
 
+  // ✅ NOW CALL THE FUNCTIONS (after they're defined)
   const weeklyBreakdown = getWeeklyBreakdown();
   const monthlyReport = getMonthlyReport();
 
