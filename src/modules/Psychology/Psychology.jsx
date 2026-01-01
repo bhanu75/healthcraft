@@ -63,7 +63,7 @@ const Psychology = () => {
     return { emoji: '😔', text: 'Needs Care' };
   };
 
-  const avgMood = getAverageMood();
+  const avgMood = getAverageMood()
   const avgEnergy = psychologyData.length
     ? (psychologyData.reduce((a, e) => a + e.energy, 0) / psychologyData.length).toFixed(1)
     : 0;
