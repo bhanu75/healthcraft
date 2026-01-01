@@ -1,3 +1,5 @@
+// File - src/store/useAppStore.js
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -8,28 +10,29 @@ const useAppStore = create(
       activeModule: 'weight',
       setActiveModule: (module) => set({ activeModule: module }),
 
-      // Weight tracking data
-      weightData: [
-        { date: '2025-09-01', weight: 75 },
-        { date: '2025-09-08', weight: 74.5 },
-        { date: '2025-09-15', weight: 74 },
-        { date: '2025-09-22', weight: 73.5 },
-      ],
+      // Weight tracking data (user will add starting weight)
+      weightData: [],
 
       addWeightEntry: (date, weight) => {
-        const newData = [...get().weightData, { date, weight: parseFloat(weight) }]
-          .sort((a, b) => new Date(a.date) - new Date(b.date));
+        const newEntry = { date, weight: parseFloat(weight) };
+
+        const newData = [...get().weightData, newEntry].sort(
+          (a, b) => new Date(a.date) - new Date(b.date)
+        );
+
         set({ weightData: newData });
       },
 
       deleteWeightEntry: (date) => {
-        const filtered = get().weightData.filter(entry => entry.date !== date);
+        const filtered = get().weightData.filter(
+          (entry) => entry.date !== date
+        );
         set({ weightData: filtered });
       },
 
       // Psychology data
       psychologyData: [],
-      
+
       addPsychologyEntry: (entry) => {
         set({ psychologyData: [...get().psychologyData, entry] });
       },
@@ -44,7 +47,7 @@ const useAppStore = create(
       updateStreak: () => {
         const today = new Date().toISOString().split('T')[0];
         const lastDate = get().streakData.lastEntryDate;
-        
+
         if (!lastDate) {
           set({
             streakData: {
@@ -65,7 +68,10 @@ const useAppStore = create(
           set({
             streakData: {
               currentStreak: newStreak,
-              longestStreak: Math.max(newStreak, get().streakData.longestStreak),
+              longestStreak: Math.max(
+                newStreak,
+                get().streakData.longestStreak
+              ),
               lastEntryDate: today,
             },
           });
@@ -84,28 +90,40 @@ const useAppStore = create(
       getWeeklyChange: () => {
         const data = get().weightData;
         if (data.length < 2) return 0;
+
         const latest = data[data.length - 1].weight;
-        const weekAgo = data[Math.max(0, data.length - 8)].weight;
+        const weekAgoIndex = Math.max(0, data.length - 8);
+        const weekAgo = data[weekAgoIndex].weight;
+
         return (latest - weekAgo).toFixed(1);
       },
 
       getMonthlyChange: () => {
         const data = get().weightData;
         if (data.length < 2) return 0;
+
         const latest = data[data.length - 1].weight;
         const monthAgo = data[0].weight;
+
         return (latest - monthAgo).toFixed(1);
       },
 
       getAverageWeightLoss: () => {
         const data = get().weightData;
         if (data.length < 2) return 0;
-        const totalChange = data[data.length - 1].weight - data[0].weight;
+
+        const totalChange =
+          data[data.length - 1].weight - data[0].weight;
+
         const daysDiff = Math.floor(
-          (new Date(data[data.length - 1].date) - new Date(data[0].date)) / 
-          (1000 * 60 * 60 * 24)
+          (new Date(data[data.length - 1].date) -
+            new Date(data[0].date)) /
+            (1000 * 60 * 60 * 24)
         );
-        return daysDiff > 0 ? (totalChange / daysDiff * 7).toFixed(2) : 0;
+
+        return daysDiff > 0
+          ? ((totalChange / daysDiff) * 7).toFixed(2)
+          : 0;
       },
     }),
     {
