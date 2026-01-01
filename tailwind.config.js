@@ -3,12 +3,14 @@ module.exports = {
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'slide-up': 'slideUp 0.3s ease-out',
         'scale-in': 'scaleIn 0.2s ease-out',
+        'bounce-slow': 'bounce 2s infinite',
       },
       keyframes: {
         fadeIn: {
@@ -32,9 +34,36 @@ module.exports = {
   daisyui: {
     themes: [
       {
-        mytheme: {
+        light: {
           "primary": "#3b82f6",
           "secondary": "#8b5cf6",
+          "accent": "#10b981",
+          "neutral": "#1f2937",
+          "base-100": "#ffffff",
+          "base-200": "#f3f4f6",
+          "base-300": "#e5e7eb",
+          "info": "#06b6d4",
+          "success": "#10b981",
+          "warning": "#f59e0b",
+          "error": "#ef4444",
+        },
+        dark: {
+          "primary": "#3b82f6",
+          "secondary": "#8b5cf6",
+          "accent": "#10b981",
+          "neutral": "#1f2937",
+          "base-100": "#0f172a",
+          "base-200": "#1e293b",
+          "base-300": "#334155",
+          "info": "#06b6d4",
+          "success": "#10b981",
+          "warning": "#f59e0b",
+          "error": "#ef4444",
+        },
+      },
+    ],
+  },
+}          "secondary": "#8b5cf6",
           "accent": "#10b981",
           "neutral": "#1f2937",
           "base-100": "#ffffff",
