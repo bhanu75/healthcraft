@@ -1,5 +1,5 @@
 import { format, parseISO, differenceInDays } from 'date-fns';
-import { clsx } from 'clsx';
+import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 // Tailwind class merger utility
