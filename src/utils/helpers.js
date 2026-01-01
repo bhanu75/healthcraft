@@ -105,7 +105,7 @@ export const isValidDate = (dateString) => {
   try {
     const date = new Date(dateString);
     return date instanceof Date && !isNaN(date);
-  } catch {
+  } catch (error) {
     return false;
   }
 };
