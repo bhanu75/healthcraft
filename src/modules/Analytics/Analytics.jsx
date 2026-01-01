@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { BarChart3, TrendingDown, Target, Activity, Calendar as CalendarIcon } from 'lucide-react';
 import useAppStore from '../../store/useAppStore';
 import StatsCard from '../../components/StatsCard';
@@ -21,9 +21,7 @@ const Analytics = () => {
     weightData, 
     getWeeklyChange, 
     getMonthlyChange, 
-    getAverageWeightLoss,
-    getCurrentWeight,
-    getStartWeight
+    getAverageWeightLoss
   } = useAppStore();
 
   const [viewMode, setViewMode] = useState('weekly');
@@ -32,10 +30,8 @@ const Analytics = () => {
   const monthlyChange = getMonthlyChange();
   const avgWeeklyLoss = getAverageWeightLoss();
 
-  // ✅ DEFINE FUNCTIONS FIRST (before using them)
-  
-  // Calculate weekly breakdown with month labels
-  const getWeeklyBreakdown = () => {
+  // Use useMemo to calculate data only when weightData changes
+  const weeklyBreakdown = useMemo(() => {
     if (weightData.length < 2) return [];
     
     const weeks = [];
@@ -51,7 +47,7 @@ const Analytics = () => {
         const monthLabel = format(parseISO(weekEnd.date), 'MMM');
         
         weeks.push({
-          week: `Week ${weeks.length + 1}`,
+          week: 'Week ' + (weeks.length + 1),
           month: monthLabel,
           change: parseFloat(change),
           color: change < 0 ? '#10b981' : change > 0 ? '#ef4444' : '#6b7280'
@@ -62,10 +58,9 @@ const Analytics = () => {
     });
     
     return weeks;
-  };
+  }, [weightData]);
 
-  // Calculate monthly report
-  const getMonthlyReport = () => {
+  const monthlyReport = useMemo(() => {
     if (weightData.length === 0) return [];
     
     const firstDate = parseISO(weightData[0].date);
@@ -100,11 +95,7 @@ const Analytics = () => {
         color: change < 0 ? '#10b981' : change > 0 ? '#ef4444' : '#6b7280'
       };
     }).filter(Boolean);
-  };
-
-  // ✅ NOW CALL THE FUNCTIONS (after they're defined)
-  const weeklyBreakdown = getWeeklyBreakdown();
-  const monthlyReport = getMonthlyReport();
+  }, [weightData]);
 
   const totalEntries = weightData.length;
   const totalDays = weightData.length > 1 
@@ -113,7 +104,6 @@ const Analytics = () => {
 
   return (
     <div className="space-y-4 animate-fade-in">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-base-content flex items-center gap-2">
@@ -124,30 +114,21 @@ const Analytics = () => {
         </div>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-2 gap-3">
         <StatsCard
           title="Weekly Change"
-          value={weeklyChange > 0 ? `+${weeklyChange}` : weeklyChange}
+          value={weeklyChange > 0 ? '+' + weeklyChange : weeklyChange}
           unit="kg"
           subtitle="Last 7 days"
-          gradient={
-            weeklyChange < 0 
-              ? 'from-green-500 to-green-600' 
-              : 'from-red-500 to-red-600'
-          }
+          gradient={weeklyChange < 0 ? 'from-green-500 to-green-600' : 'from-red-500 to-red-600'}
           icon={TrendingDown}
         />
         <StatsCard
           title="Monthly Change"
-          value={monthlyChange > 0 ? `+${monthlyChange}` : monthlyChange}
+          value={monthlyChange > 0 ? '+' + monthlyChange : monthlyChange}
           unit="kg"
           subtitle="Last 30 days"
-          gradient={
-            monthlyChange < 0 
-              ? 'from-blue-500 to-blue-600' 
-              : 'from-orange-500 to-orange-600'
-          }
+          gradient={monthlyChange < 0 ? 'from-blue-500 to-blue-600' : 'from-orange-500 to-orange-600'}
           icon={Target}
         />
       </div>
@@ -161,23 +142,21 @@ const Analytics = () => {
         icon={Activity}
       />
 
-      {/* View Toggle */}
       <div className="flex gap-2">
         <button
           onClick={() => setViewMode('weekly')}
-          className={`btn btn-sm flex-1 ${viewMode === 'weekly' ? 'btn-primary' : 'btn-outline'}`}
+          className={'btn btn-sm flex-1 ' + (viewMode === 'weekly' ? 'btn-primary' : 'btn-outline')}
         >
           Weekly View
         </button>
         <button
           onClick={() => setViewMode('monthly')}
-          className={`btn btn-sm flex-1 ${viewMode === 'monthly' ? 'btn-primary' : 'btn-outline'}`}
+          className={'btn btn-sm flex-1 ' + (viewMode === 'monthly' ? 'btn-primary' : 'btn-outline')}
         >
           Monthly Report
         </button>
       </div>
 
-      {/* Weekly Breakdown Chart */}
       {viewMode === 'weekly' && weeklyBreakdown.length > 0 && (
         <div className="card bg-base-100 shadow-xl">
           <div className="card-body">
@@ -201,13 +180,13 @@ const Analytics = () => {
                     borderRadius: '8px'
                   }}
                   formatter={(value, name, props) => [
-                    `${value} kg`, 
-                    `Change (${props.payload.month})`
+                    value + ' kg', 
+                    'Change (' + props.payload.month + ')'
                   ]}
                 />
                 <Bar dataKey="change" radius={[8, 8, 0, 0]}>
                   {weeklyBreakdown.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                    <Cell key={'cell-' + index} fill={entry.color} />
                   ))}
                 </Bar>
               </BarChart>
@@ -219,10 +198,8 @@ const Analytics = () => {
         </div>
       )}
 
-      {/* Monthly Report */}
       {viewMode === 'monthly' && monthlyReport.length > 0 && (
         <div className="space-y-4">
-          {/* Monthly Chart */}
           <div className="card bg-base-100 shadow-xl">
             <div className="card-body">
               <h2 className="card-title text-lg mb-4">Monthly Progress</h2>
@@ -258,7 +235,6 @@ const Analytics = () => {
             </div>
           </div>
 
-          {/* Monthly Details */}
           <div className="card bg-base-100 shadow-xl">
             <div className="card-body">
               <h2 className="card-title text-lg mb-3">Monthly Breakdown</h2>
@@ -271,11 +247,11 @@ const Analytics = () => {
                           <CalendarIcon className="w-5 h-5 text-primary" />
                           <h3 className="font-bold">{month.month}</h3>
                         </div>
-                        <div className={`badge badge-lg ${
+                        <div className={'badge badge-lg ' + (
                           month.change < 0 ? 'badge-success' : 
                           month.change > 0 ? 'badge-error' : 
                           'badge-ghost'
-                        }`}>
+                        )}>
                           {month.change > 0 ? '+' : ''}{month.change} kg
                         </div>
                       </div>
@@ -307,7 +283,6 @@ const Analytics = () => {
         </div>
       )}
 
-      {/* Insights Card */}
       <div className="card bg-base-100 shadow-xl">
         <div className="card-body">
           <h2 className="card-title text-lg mb-3">Insights</h2>
@@ -318,7 +293,7 @@ const Analytics = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div>
-                <h3 className="font-bold">Excellent Progress! 🎉</h3>
+                <h3 className="font-bold">Excellent Progress!</h3>
                 <div className="text-xs">You lost {Math.abs(weeklyChange)} kg this week. Keep it up!</div>
               </div>
             </div>
@@ -328,7 +303,7 @@ const Analytics = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
               <div>
-                <h3 className="font-bold">Stay Focused 💪</h3>
+                <h3 className="font-bold">Stay Focused</h3>
                 <div className="text-xs">Weight increased by {weeklyChange} kg. Review your habits and stay consistent.</div>
               </div>
             </div>
