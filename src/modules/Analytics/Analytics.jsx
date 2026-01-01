@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { BarChart3, TrendingDown, Target, Activity, Calendar as CalendarIcon } from 'lucide-react';
 import useAppStore from '../../store/useAppStore';
 import StatsCard from '../../components/StatsCard';
@@ -16,99 +16,117 @@ import {
 } from 'recharts';
 import { format, startOfMonth, endOfMonth, eachMonthOfInterval, parseISO } from 'date-fns';
 
-const Analytics = () => {
-  const { 
-    weightData, 
-    getWeeklyChange, 
-    getMonthlyChange, 
-    getAverageWeightLoss
-  } = useAppStore();
+function getWeeklyBreakdownData(weightData) {
+  if (weightData.length < 2) {
+    return [];
+  }
+  
+  const weeks = [];
+  let currentWeek = [];
+  
+  for (let idx = 0; idx < weightData.length; idx++) {
+    const entry = weightData[idx];
+    currentWeek.push(entry);
+    
+    if (currentWeek.length === 7 || idx === weightData.length - 1) {
+      const weekStart = currentWeek[0];
+      const weekEnd = currentWeek[currentWeek.length - 1];
+      const change = (weekEnd.weight - weekStart.weight).toFixed(1);
+      const monthLabel = format(parseISO(weekEnd.date), 'MMM');
+      
+      weeks.push({
+        week: 'Week ' + String(weeks.length + 1),
+        month: monthLabel,
+        change: parseFloat(change),
+        color: change < 0 ? '#10b981' : change > 0 ? '#ef4444' : '#6b7280'
+      });
+      
+      currentWeek = [];
+    }
+  }
+  
+  return weeks;
+}
 
-  const [viewMode, setViewMode] = useState('weekly');
+function getMonthlyReportData(weightData) {
+  if (weightData.length === 0) {
+    return [];
+  }
+  
+  const firstDate = parseISO(weightData[0].date);
+  const lastDate = parseISO(weightData[weightData.length - 1].date);
+  const months = eachMonthOfInterval({ start: firstDate, end: lastDate });
+  
+  const results = [];
+  
+  for (let i = 0; i < months.length; i++) {
+    const monthDate = months[i];
+    const monthStr = format(monthDate, 'MMM yyyy');
+    const monthStart = startOfMonth(monthDate);
+    const monthEnd = endOfMonth(monthDate);
+    
+    const entriesInMonth = [];
+    for (let j = 0; j < weightData.length; j++) {
+      const entry = weightData[j];
+      const entryDate = parseISO(entry.date);
+      if (entryDate >= monthStart && entryDate <= monthEnd) {
+        entriesInMonth.push(entry);
+      }
+    }
+    
+    if (entriesInMonth.length === 0) {
+      continue;
+    }
+    
+    const startWeight = entriesInMonth[0].weight;
+    const endWeight = entriesInMonth[entriesInMonth.length - 1].weight;
+    const change = (endWeight - startWeight).toFixed(1);
+    
+    let sumWeight = 0;
+    for (let k = 0; k < entriesInMonth.length; k++) {
+      sumWeight = sumWeight + entriesInMonth[k].weight;
+    }
+    const avgWeight = (sumWeight / entriesInMonth.length).toFixed(1);
+    
+    results.push({
+      month: monthStr,
+      startWeight: startWeight,
+      endWeight: endWeight,
+      avgWeight: parseFloat(avgWeight),
+      change: parseFloat(change),
+      entries: entriesInMonth.length,
+      color: change < 0 ? '#10b981' : change > 0 ? '#ef4444' : '#6b7280'
+    });
+  }
+  
+  return results;
+}
+
+const Analytics = function() {
+  const store = useAppStore();
+  const weightData = store.weightData;
+  const getWeeklyChange = store.getWeeklyChange;
+  const getMonthlyChange = store.getMonthlyChange;
+  const getAverageWeightLoss = store.getAverageWeightLoss;
+
+  const viewModeState = useState('weekly');
+  const viewMode = viewModeState[0];
+  const setViewMode = viewModeState[1];
 
   const weeklyChange = getWeeklyChange();
   const monthlyChange = getMonthlyChange();
   const avgWeeklyLoss = getAverageWeightLoss();
 
-  const weeklyBreakdown = useMemo(() => {
-    if (weightData.length < 2) {
-      return [];
-    }
-    
-    const weeks = [];
-    let currentWeek = [];
-    
-    for (let idx = 0; idx < weightData.length; idx++) {
-      const entry = weightData[idx];
-      currentWeek.push(entry);
-      
-      if (currentWeek.length === 7 || idx === weightData.length - 1) {
-        const weekStart = currentWeek[0];
-        const weekEnd = currentWeek[currentWeek.length - 1];
-        const change = (weekEnd.weight - weekStart.weight).toFixed(1);
-        const monthLabel = format(parseISO(weekEnd.date), 'MMM');
-        
-        weeks.push({
-          week: 'Week ' + (weeks.length + 1),
-          month: monthLabel,
-          change: parseFloat(change),
-          color: change < 0 ? '#10b981' : change > 0 ? '#ef4444' : '#6b7280'
-        });
-        
-        currentWeek = [];
-      }
-    }
-    
-    return weeks;
-  }, [weightData]);
-
-  const monthlyReport = useMemo(() => {
-    if (weightData.length === 0) {
-      return [];
-    }
-    
-    const firstDate = parseISO(weightData[0].date);
-    const lastDate = parseISO(weightData[weightData.length - 1].date);
-    const months = eachMonthOfInterval({ start: firstDate, end: lastDate });
-    
-    const report = months.map((monthDate) => {
-      const monthStr = format(monthDate, 'MMM yyyy');
-      const monthStart = startOfMonth(monthDate);
-      const monthEnd = endOfMonth(monthDate);
-      
-      const entriesInMonth = weightData.filter((entry) => {
-        const entryDate = parseISO(entry.date);
-        return entryDate >= monthStart && entryDate <= monthEnd;
-      });
-      
-      if (entriesInMonth.length === 0) {
-        return null;
-      }
-      
-      const startWeight = entriesInMonth[0].weight;
-      const endWeight = entriesInMonth[entriesInMonth.length - 1].weight;
-      const change = (endWeight - startWeight).toFixed(1);
-      const sumWeight = entriesInMonth.reduce((sum, e) => sum + e.weight, 0);
-      const avgWeight = (sumWeight / entriesInMonth.length).toFixed(1);
-      
-      return {
-        month: monthStr,
-        startWeight: startWeight,
-        endWeight: endWeight,
-        avgWeight: parseFloat(avgWeight),
-        change: parseFloat(change),
-        entries: entriesInMonth.length,
-        color: change < 0 ? '#10b981' : change > 0 ? '#ef4444' : '#6b7280'
-      };
-    });
-    
-    return report.filter(Boolean);
-  }, [weightData]);
+  const weeklyBreakdown = getWeeklyBreakdownData(weightData);
+  const monthlyReport = getMonthlyReportData(weightData);
 
   const totalEntries = weightData.length;
-  const totalDays = weightData.length > 1 
-    ? Math.floor((parseISO(weightData[weightData.length - 1].date) - parseISO(weightData[0].date)) / (1000 * 60 * 60 * 24))
-    : 0;
+  let totalDays = 0;
+  if (weightData.length > 1) {
+    const firstDate = parseISO(weightData[0].date);
+    const lastDate = parseISO(weightData[weightData.length - 1].date);
+    totalDays = Math.floor((lastDate - firstDate) / (1000 * 60 * 60 * 24));
+  }
 
   return (
     <div className="space-y-4 animate-fade-in">
@@ -152,13 +170,13 @@ const Analytics = () => {
 
       <div className="flex gap-2">
         <button
-          onClick={() => setViewMode('weekly')}
+          onClick={function() { setViewMode('weekly'); }}
           className={'btn btn-sm flex-1 ' + (viewMode === 'weekly' ? 'btn-primary' : 'btn-outline')}
         >
           Weekly View
         </button>
         <button
-          onClick={() => setViewMode('monthly')}
+          onClick={function() { setViewMode('monthly'); }}
           className={'btn btn-sm flex-1 ' + (viewMode === 'monthly' ? 'btn-primary' : 'btn-outline')}
         >
           Monthly Report
@@ -187,15 +205,14 @@ const Analytics = () => {
                     border: '2px solid #3b82f6',
                     borderRadius: '8px'
                   }}
-                  formatter={(value, name, props) => [
-                    value + ' kg', 
-                    'Change (' + props.payload.month + ')'
-                  ]}
+                  formatter={function(value, name, props) {
+                    return [value + ' kg', 'Change (' + props.payload.month + ')'];
+                  }}
                 />
                 <Bar dataKey="change" radius={[8, 8, 0, 0]}>
-                  {weeklyBreakdown.map((entry, index) => (
-                    <Cell key={'cell-' + index} fill={entry.color} />
-                  ))}
+                  {weeklyBreakdown.map(function(entry, index) {
+                    return <Cell key={'cell-' + index} fill={entry.color} />;
+                  })}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
@@ -247,44 +264,51 @@ const Analytics = () => {
             <div className="card-body">
               <h2 className="card-title text-lg mb-3">Monthly Breakdown</h2>
               <div className="space-y-3">
-                {monthlyReport.map((month, idx) => (
-                  <div key={idx} className="card bg-base-200 shadow">
-                    <div className="card-body p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <CalendarIcon className="w-5 h-5 text-primary" />
-                          <h3 className="font-bold">{month.month}</h3>
+                {monthlyReport.map(function(month, idx) {
+                  let badgeClass = 'badge badge-lg ';
+                  if (month.change < 0) {
+                    badgeClass = badgeClass + 'badge-success';
+                  } else if (month.change > 0) {
+                    badgeClass = badgeClass + 'badge-error';
+                  } else {
+                    badgeClass = badgeClass + 'badge-ghost';
+                  }
+                  
+                  return (
+                    <div key={idx} className="card bg-base-200 shadow">
+                      <div className="card-body p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <CalendarIcon className="w-5 h-5 text-primary" />
+                            <h3 className="font-bold">{month.month}</h3>
+                          </div>
+                          <div className={badgeClass}>
+                            {month.change > 0 ? '+' : ''}{month.change} kg
+                          </div>
                         </div>
-                        <div className={'badge badge-lg ' + (
-                          month.change < 0 ? 'badge-success' : 
-                          month.change > 0 ? 'badge-error' : 
-                          'badge-ghost'
-                        )}>
-                          {month.change > 0 ? '+' : ''}{month.change} kg
+                        
+                        <div className="grid grid-cols-3 gap-2 text-sm">
+                          <div>
+                            <p className="text-xs text-base-content/60">Start</p>
+                            <p className="font-medium">{month.startWeight} kg</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-base-content/60">End</p>
+                            <p className="font-medium">{month.endWeight} kg</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-base-content/60">Avg</p>
+                            <p className="font-medium">{month.avgWeight} kg</p>
+                          </div>
                         </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-3 gap-2 text-sm">
-                        <div>
-                          <p className="text-xs text-base-content/60">Start</p>
-                          <p className="font-medium">{month.startWeight} kg</p>
+                        
+                        <div className="mt-2 text-xs text-base-content/60">
+                          {month.entries} entries this month
                         </div>
-                        <div>
-                          <p className="text-xs text-base-content/60">End</p>
-                          <p className="font-medium">{month.endWeight} kg</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-base-content/60">Avg</p>
-                          <p className="font-medium">{month.avgWeight} kg</p>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-2 text-xs text-base-content/60">
-                        {month.entries} entries this month
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
