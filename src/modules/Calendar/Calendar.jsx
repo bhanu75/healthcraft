@@ -1,334 +1,212 @@
 import React, { useState } from 'react';
-import { Brain, Plus, X, Sparkles } from 'lucide-react';
+import { Calendar as CalendarIcon, Flame, Trophy, Award } from 'lucide-react';
 import useAppStore from '../../store/useAppStore';
+import Confetti from 'react-confetti';
+import { shouldCelebrate, getCelebrationMessage } from '../../utils/helpers';
 
-const Psychology = () => {
-  const { psychologyData, addPsychologyEntry } = useAppStore();
-  const [showForm, setShowForm] = useState(false);
-  const [mood, setMood] = useState('');
-  const [energy, setEnergy] = useState(5);
-  const [stress, setStress] = useState(5);
-  const [motivation, setMotivation] = useState(5);
-  const [notes, setNotes] = useState('');
-  const [gratitude, setGratitude] = useState('');
+const Calendar = () => {
+  const { streakData, updateStreak } = useAppStore();
+  const [showConfetti, setShowConfetti] = useState(false);
 
-  const moods = [
-    { value: 'great', label: 'Great', color: 'success' },
-    { value: 'good', label: 'Good', color: 'info' },
-    { value: 'okay', label: 'Okay', color: 'warning' },
-    { value: 'bad', label: 'Bad', color: 'error' }
+  const handleCheckIn = () => {
+    updateStreak();
+    
+    if (shouldCelebrate(streakData.currentStreak + 1)) {
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 5000);
+    }
+  };
+
+  const milestones = [
+    { days: 7, label: '1 Week', icon: 'ðŸŽ¯', achieved: streakData.longestStreak >= 7 },
+    { days: 14, label: '2 Weeks', icon: 'ðŸ”¥', achieved: streakData.longestStreak >= 14 },
+    { days: 30, label: '1 Month', icon: 'â­', achieved: streakData.longestStreak >= 30 },
+    { days: 60, label: '2 Months', icon: 'ðŸ’ª', achieved: streakData.longestStreak >= 60 },
+    { days: 90, label: '3 Months', icon: 'ðŸ†', achieved: streakData.longestStreak >= 90 },
+    { days: 180, label: '6 Months', icon: 'ðŸ‘‘', achieved: streakData.longestStreak >= 180 },
   ];
-
-  const handleSubmit = () => {
-    if (!mood) return;
-
-    const today = new Date().toISOString().split('T')[0];
-    
-    addPsychologyEntry({
-      date: today,
-      mood: mood,
-      energy: Number(energy),
-      stress: Number(stress),
-      motivation: Number(motivation),
-      notes: notes,
-      gratitude: gratitude,
-      timestamp: new Date().toISOString()
-    });
-
-    setMood('');
-    setEnergy(5);
-    setStress(5);
-    setMotivation(5);
-    setNotes('');
-    setGratitude('');
-    setShowForm(false);
-  };
-
-  const getAverageMood = () => {
-    if (psychologyData.length === 0) return null;
-
-    const moodValues = { great: 4, good: 3, okay: 2, bad: 1 };
-    let sum = 0;
-    
-    for (let i = 0; i < psychologyData.length; i++) {
-      const entry = psychologyData[i];
-      sum = sum + (moodValues[entry.mood] || 2);
-    }
-    
-    const avg = sum / psychologyData.length;
-
-    if (avg >= 3.5) return { text: 'Great', color: 'success' };
-    if (avg >= 2.5) return { text: 'Good', color: 'info' };
-    if (avg >= 1.5) return { text: 'Okay', color: 'warning' };
-    return { text: 'Needs Care', color: 'error' };
-  };
-
-  const getAverageEnergy = () => {
-    if (psychologyData.length === 0) return 0;
-    let sum = 0;
-    for (let i = 0; i < psychologyData.length; i++) {
-      sum = sum + psychologyData[i].energy;
-    }
-    return (sum / psychologyData.length).toFixed(1);
-  };
-
-  const getAverageMotivation = () => {
-    if (psychologyData.length === 0) return 0;
-    let sum = 0;
-    for (let i = 0; i < psychologyData.length; i++) {
-      sum = sum + psychologyData[i].motivation;
-    }
-    return (sum / psychologyData.length).toFixed(1);
-  };
-
-  const avgMood = getAverageMood();
-  const avgEnergy = getAverageEnergy();
-  const avgMotivation = getAverageMotivation();
-
-  const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-GB');
-  };
 
   return (
     <div className="space-y-4 animate-fade-in">
+      {showConfetti && (
+        <Confetti
+          width={window.innerWidth}
+          height={window.innerHeight}
+          recycle={false}
+          numberOfPieces={500}
+        />
+      )}
+
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Brain className="w-7 h-7 text-purple-500" />
-            Mind Tracker
+          <h1 className="text-2xl font-bold text-base-content flex items-center gap-2">
+            <CalendarIcon className="w-7 h-7 text-orange-500" />
+            Streak Calendar
           </h1>
-          <p className="text-sm opacity-60">Track your mental wellness</p>
-        </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="btn btn-primary btn-circle"
-        >
-          <Plus className="w-6 h-6" />
-        </button>
-      </div>
-
-      {psychologyData.length > 0 && (
-        <div className="grid grid-cols-3 gap-3">
-          <div className="card bg-purple-500 text-white">
-            <div className="card-body p-4 text-center">
-              <p className="text-xs">Avg Mood</p>
-              <p className="text-2xl font-bold">{avgMood ? avgMood.text : 'N/A'}</p>
-            </div>
-          </div>
-
-          <div className="card bg-orange-500 text-white">
-            <div className="card-body p-4 text-center">
-              <p className="text-xs">Avg Energy</p>
-              <p className="text-2xl font-bold">{avgEnergy}</p>
-              <p className="text-xs">/10</p>
-            </div>
-          </div>
-
-          <div className="card bg-pink-500 text-white">
-            <div className="card-body p-4 text-center">
-              <p className="text-xs">Motivation</p>
-              <p className="text-2xl font-bold">{avgMotivation}</p>
-              <p className="text-xs">/10</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="card bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
-        <div className="card-body text-center">
-          <Sparkles className="w-8 h-8 mx-auto mb-2" />
-          <p className="italic">
-            Your mental health is just as important as your physical health.
-          </p>
+          <p className="text-sm text-base-content/60">Build consistent habits</p>
         </div>
       </div>
 
-      {psychologyData.length > 0 && (
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title">Recent Check-ins</h2>
-            <div className="space-y-3">
-              {psychologyData.slice(0, 10).map((entry, index) => (
-                <div key={index} className="card bg-base-200">
-                  <div className="card-body p-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-medium capitalize">{entry.mood}</p>
-                        <p className="text-sm opacity-60">{formatDate(entry.date)}</p>
-                      </div>
-                      <div className={`badge badge-${moods.find(m => m.value === entry.mood)?.color || 'ghost'}`}>
-                        {entry.mood}
-                      </div>
-                    </div>
+      {/* Main Streak Card */}
+      <div className="card bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-xl">
+        <div className="card-body items-center text-center">
+          <div className="text-7xl mb-4 animate-pulse">
+            <Flame className="w-20 h-20 mx-auto" />
+          </div>
+          <div className="text-6xl font-bold mb-2">
+            {streakData.currentStreak}
+          </div>
+          <p className="text-xl opacity-90 mb-6">Day Streak ðŸ”¥</p>
+          
+          <button 
+            onClick={handleCheckIn}
+            className="btn btn-lg btn-wide bg-white text-orange-600 hover:bg-orange-50 border-none"
+          >
+            Check In Today
+          </button>
 
-                    <div className="grid grid-cols-3 gap-2 text-xs mt-2">
-                      <div>
-                        <span className="opacity-60">Energy: </span>
-                        <span className="font-bold">{entry.energy}/10</span>
-                      </div>
-                      <div>
-                        <span className="opacity-60">Stress: </span>
-                        <span className="font-bold">{entry.stress}/10</span>
-                      </div>
-                      <div>
-                        <span className="opacity-60">Motivation: </span>
-                        <span className="font-bold">{entry.motivation}/10</span>
-                      </div>
-                    </div>
-
-                    {entry.notes && (
-                      <p className="text-sm italic mt-2 opacity-80">
-                        {entry.notes}
-                      </p>
-                    )}
-                    
-                    {entry.gratitude && (
-                      <p className="text-sm mt-2">
-                        <strong>Grateful for:</strong> {entry.gratitude}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
+          <div className="mt-6 grid grid-cols-2 gap-4 w-full">
+            <div className="bg-white/20 rounded-lg p-4 backdrop-blur-sm">
+              <Trophy className="w-8 h-8 mx-auto mb-2" />
+              <p className="text-sm opacity-80">Longest Streak</p>
+              <p className="text-2xl font-bold">{streakData.longestStreak}</p>
+            </div>
+            <div className="bg-white/20 rounded-lg p-4 backdrop-blur-sm">
+              <Award className="w-8 h-8 mx-auto mb-2" />
+              <p className="text-sm opacity-80">Last Check-in</p>
+              <p className="text-sm font-bold">
+                {streakData.lastEntryDate 
+                  ? new Date(streakData.lastEntryDate).toLocaleDateString()
+                  : 'Not yet'
+                }
+              </p>
             </div>
           </div>
         </div>
-      )}
+      </div>
 
-      {psychologyData.length === 0 && (
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body text-center py-12">
-            <Brain className="w-16 h-16 mx-auto mb-4 text-purple-500" />
-            <h3 className="text-xl font-bold mb-2">Start Tracking Your Mind</h3>
-            <p className="text-base-content/60 mb-4">
-              Log your first mental wellness check-in
-            </p>
-            <button 
-              onClick={() => setShowForm(true)} 
-              className="btn btn-primary btn-wide"
-            >
-              Add First Check-in
-            </button>
-          </div>
-        </div>
-      )}
-
-      {showForm && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="card bg-base-100 w-full max-w-md">
-            <div className="card-body">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="card-title">How are you feeling?</h3>
-                <button 
-                  onClick={() => setShowForm(false)} 
-                  className="btn btn-ghost btn-sm btn-circle"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-medium">Select Your Mood</span>
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {moods.map(m => (
-                    <button
-                      key={m.value}
-                      onClick={() => setMood(m.value)}
-                      className={`btn ${mood === m.value ? `btn-${m.color}` : 'btn-outline'}`}
-                    >
-                      {m.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="form-control mt-4">
-                <label className="label">
-                  <span className="label-text">Energy Level</span>
-                  <span className="label-text-alt font-bold">{energy}/10</span>
-                </label>
-                <input 
-                  type="range" 
-                  min="1" 
-                  max="10" 
-                  value={energy} 
-                  onChange={(e) => setEnergy(e.target.value)}
-                  className="range range-primary"
-                />
-              </div>
-
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Stress Level</span>
-                  <span className="label-text-alt font-bold">{stress}/10</span>
-                </label>
-                <input 
-                  type="range" 
-                  min="1" 
-                  max="10" 
-                  value={stress} 
-                  onChange={(e) => setStress(e.target.value)}
-                  className="range range-warning"
-                />
-              </div>
-
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Motivation</span>
-                  <span className="label-text-alt font-bold">{motivation}/10</span>
-                </label>
-                <input 
-                  type="range" 
-                  min="1" 
-                  max="10" 
-                  value={motivation} 
-                  onChange={(e) => setMotivation(e.target.value)}
-                  className="range range-success"
-                />
-              </div>
-
-              <div className="form-control mt-2">
-                <label className="label">
-                  <span className="label-text">Gratitude</span>
-                </label>
-                <input
-                  type="text"
-                  className="input input-bordered"
-                  placeholder="What are you grateful for?"
-                  value={gratitude}
-                  onChange={(e) => setGratitude(e.target.value)}
-                />
-              </div>
-
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Notes</span>
-                </label>
-                <textarea
-                  className="textarea textarea-bordered"
-                  placeholder="Any notes about your day?"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  rows="3"
-                />
-              </div>
-
-              <button 
-                onClick={handleSubmit} 
-                className="btn btn-primary btn-block mt-4" 
-                disabled={!mood}
+      {/* Milestones */}
+      <div className="card bg-base-100 shadow-xl">
+        <div className="card-body">
+          <h2 className="card-title text-lg mb-4">Milestones</h2>
+          <div className="grid grid-cols-2 gap-3">
+            {milestones.map((milestone) => (
+              <div
+                key={milestone.days}
+                className={`card ${
+                  milestone.achieved 
+                    ? 'bg-gradient-to-br from-green-500 to-green-600 text-white' 
+                    : 'bg-base-200'
+                } shadow`}
               >
-                Save Check-in
-              </button>
-            </div>
+                <div className="card-body p-4 items-center text-center">
+                  <div className={`text-3xl mb-2 ${
+                    milestone.achieved ? 'animate-bounce' : 'opacity-40'
+                  }`}>
+                    {milestone.icon}
+                  </div>
+                  <p className={`text-sm font-medium ${
+                    !milestone.achieved && 'text-base-content/50'
+                  }`}>
+                    {milestone.label}
+                  </p>
+                  <p className={`text-xs ${
+                    milestone.achieved ? 'opacity-90' : 'text-base-content/40'
+                  }`}>
+                    {milestone.days} days
+                  </p>
+                  {milestone.achieved && (
+                    <div className="badge badge-sm bg-white/30 border-none mt-2">
+                      âœ“ Achieved
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Motivation Quote */}
+      {streakData.currentStreak > 0 && (
+        <div className="card bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-xl">
+          <div className="card-body text-center">
+            <div className="text-4xl mb-3">ðŸ’«</div>
+            <p className="text-lg font-medium">
+              {getCelebrationMessage(streakData.currentStreak)}
+            </p>
           </div>
         </div>
       )}
+
+      {/* Coming Soon Features */}
+      <div className="card bg-base-100 shadow-xl">
+        <div className="card-body">
+          <h3 className="card-title text-lg mb-3">Coming Soon</h3>
+          <div className="space-y-3">
+            <div className="flex items-start gap-3">
+              <div className="badge badge-primary badge-lg">ðŸ“…</div>
+              <div>
+                <p className="font-medium">Visual Calendar</p>
+                <p className="text-sm text-base-content/60">
+                  See your daily check-ins on a monthly calendar view
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="badge badge-secondary badge-lg">â°</div>
+              <div>
+                <p className="font-medium">Daily Reminders</p>
+                <p className="text-sm text-base-content/60">
+                  Get notified to maintain your streak
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="badge badge-accent badge-lg">ðŸŽ¯</div>
+              <div>
+                <p className="font-medium">Custom Goals</p>
+                <p className="text-sm text-base-content/60">
+                  Set specific workout or habit goals to track
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="badge badge-info badge-lg">ðŸ˜´</div>
+              <div>
+                <p className="font-medium">Rest Day Support</p>
+                <p className="text-sm text-base-content/60">
+                  Mark rest days without breaking your streak
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="stats stats-vertical lg:stats-horizontal shadow w-full">
+        <div className="stat">
+          <div className="stat-figure text-primary">
+            <Flame className="w-8 h-8" />
+          </div>
+          <div className="stat-title">Current Streak</div>
+          <div className="stat-value text-primary">{streakData.currentStreak}</div>
+          <div className="stat-desc">Keep it going!</div>
+        </div>
+
+        <div className="stat">
+          <div className="stat-figure text-secondary">
+            <Trophy className="w-8 h-8" />
+          </div>
+          <div className="stat-title">Best Streak</div>
+          <div className="stat-value text-secondary">{streakData.longestStreak}</div>
+          <div className="stat-desc">Personal record</div>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default Psychology;
+export default Calendar;
