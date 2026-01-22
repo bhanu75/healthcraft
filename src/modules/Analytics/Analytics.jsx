@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { BarChart3, TrendingDown, Target, Activity, Calendar as CalendarIcon, Award } from 'lucide-react';
 import useAppStore from '../../store/useAppStore';
 import StatsCard from '../../components/StatsCard';
