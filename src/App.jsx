@@ -11,11 +11,13 @@ function App() {
   const { activeModule, setActiveModule, theme, toggleTheme } = useAppStore();
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
+    const html = document.documentElement;
+    html.setAttribute('data-theme', theme);
+    
     if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
+      html.classList.add('dark');
     } else {
-      document.documentElement.classList.remove('dark');
+      html.classList.remove('dark');
     }
   }, [theme]);
 
@@ -35,16 +37,14 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 pb-24 transition-colors duration-300">
-      {/* Main Container */}
+    <div className="min-h-screen bg-base-200 pb-28 transition-colors duration-300">
       <div className="container mx-auto max-w-2xl px-4 py-6">
-        {/* App Header */}
-        <header className="flex items-center justify-between mb-8">
-          <div className="text-center flex-1">
-            <h1 className="text-4xl font-bold text-base-content mb-2">
+        <header className="flex items-center justify-between mb-6">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-base-content mb-1 flex items-center gap-2">
               💪 Fitness Tracker
             </h1>
-            <p className="text-base-content/70">
+            <p className="text-sm text-base-content/60">
               Track your journey, stay motivated
             </p>
           </div>
@@ -54,20 +54,18 @@ function App() {
             aria-label="Toggle theme"
           >
             {theme === 'dark' ? (
-              <Sun className="w-6 h-6" />
+              <Sun className="w-5 h-5" />
             ) : (
-              <Moon className="w-6 h-6" />
+              <Moon className="w-5 h-5" />
             )}
           </button>
         </header>
 
-        {/* Module Content */}
-        <main className="min-h-[70vh]">
+        <main>
           {renderModule()}
         </main>
       </div>
 
-      {/* Bottom Navigation */}
       <div className="fixed bottom-4 left-0 right-0 px-4 z-50">
         <div className="container mx-auto max-w-2xl">
           <Navigation 
