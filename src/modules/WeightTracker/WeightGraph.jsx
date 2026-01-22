@@ -1,14 +1,13 @@
 import React from 'react';
 import { 
-  LineChart, 
-  Line, 
   XAxis, 
   YAxis, 
   CartesianGrid, 
   Tooltip, 
   ResponsiveContainer,
   Area,
-  AreaChart
+  AreaChart,
+  Line
 } from 'recharts';
 import { formatShortDate } from '../../utils/helpers';
 
