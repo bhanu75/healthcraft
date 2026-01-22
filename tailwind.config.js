@@ -1,8 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [
-    "./src/**/*.{js,jsx,ts,tsx}",
-  ],
+  content: ["./src/**/*.{js,jsx,ts,tsx}"],
   darkMode: 'class',
   theme: {
     extend: {
@@ -10,7 +8,6 @@ module.exports = {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'slide-up': 'slideUp 0.3s ease-out',
         'scale-in': 'scaleIn 0.2s ease-out',
-        'bounce-slow': 'bounce 2s infinite',
       },
       keyframes: {
         fadeIn: {
@@ -28,9 +25,7 @@ module.exports = {
       },
     },
   },
-  plugins: [
-    require('daisyui'),
-  ],
+  plugins: [require('daisyui')],
   daisyui: {
     themes: [
       {
@@ -40,8 +35,9 @@ module.exports = {
           "accent": "#10b981",
           "neutral": "#1f2937",
           "base-100": "#ffffff",
-          "base-200": "#f3f4f6",
-          "base-300": "#e5e7eb",
+          "base-200": "#f5f5f5",
+          "base-300": "#e5e5e5",
+          "base-content": "#1f2937",
           "info": "#06b6d4",
           "success": "#10b981",
           "warning": "#f59e0b",
@@ -52,9 +48,10 @@ module.exports = {
           "secondary": "#8b5cf6",
           "accent": "#10b981",
           "neutral": "#1f2937",
-          "base-100": "#0f172a",
-          "base-200": "#1e293b",
+          "base-100": "#1e293b",
+          "base-200": "#0f172a",
           "base-300": "#334155",
+          "base-content": "#e2e8f0",
           "info": "#06b6d4",
           "success": "#10b981",
           "warning": "#f59e0b",
