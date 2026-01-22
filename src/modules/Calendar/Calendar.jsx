@@ -18,12 +18,12 @@ const Calendar = () => {
   };
 
   const milestones = [
-    { days: 7, label: '1 Week', icon: 'ðŸŽ¯', achieved: streakData.longestStreak >= 7 },
-    { days: 14, label: '2 Weeks', icon: 'ðŸ”¥', achieved: streakData.longestStreak >= 14 },
-    { days: 30, label: '1 Month', icon: 'â­', achieved: streakData.longestStreak >= 30 },
-    { days: 60, label: '2 Months', icon: 'ðŸ’ª', achieved: streakData.longestStreak >= 60 },
-    { days: 90, label: '3 Months', icon: 'ðŸ†', achieved: streakData.longestStreak >= 90 },
-    { days: 180, label: '6 Months', icon: 'ðŸ‘‘', achieved: streakData.longestStreak >= 180 },
+    { days: 7, label: '1 Week', icon: '🎯', achieved: streakData.longestStreak >= 7 },
+    { days: 14, label: '2 Weeks', icon: '🔥', achieved: streakData.longestStreak >= 14 },
+    { days: 30, label: '1 Month', icon: '⭐', achieved: streakData.longestStreak >= 30 },
+    { days: 60, label: '2 Months', icon: '💪', achieved: streakData.longestStreak >= 60 },
+    { days: 90, label: '3 Months', icon: '🏆', achieved: streakData.longestStreak >= 90 },
+    { days: 180, label: '6 Months', icon: '👑', achieved: streakData.longestStreak >= 180 },
   ];
 
   return (
@@ -37,7 +37,6 @@ const Calendar = () => {
         />
       )}
 
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-base-content flex items-center gap-2">
@@ -48,7 +47,6 @@ const Calendar = () => {
         </div>
       </div>
 
-      {/* Main Streak Card */}
       <div className="card bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-xl">
         <div className="card-body items-center text-center">
           <div className="text-7xl mb-4 animate-pulse">
@@ -57,7 +55,7 @@ const Calendar = () => {
           <div className="text-6xl font-bold mb-2">
             {streakData.currentStreak}
           </div>
-          <p className="text-xl opacity-90 mb-6">Day Streak ðŸ”¥</p>
+          <p className="text-xl opacity-90 mb-6">Day Streak 🔥</p>
           
           <button 
             onClick={handleCheckIn}
@@ -86,7 +84,6 @@ const Calendar = () => {
         </div>
       </div>
 
-      {/* Milestones */}
       <div className="card bg-base-100 shadow-xl">
         <div className="card-body">
           <h2 className="card-title text-lg mb-4">Milestones</h2>
@@ -118,7 +115,7 @@ const Calendar = () => {
                   </p>
                   {milestone.achieved && (
                     <div className="badge badge-sm bg-white/30 border-none mt-2">
-                      âœ“ Achieved
+                      ✓ Achieved
                     </div>
                   )}
                 </div>
@@ -128,11 +125,10 @@ const Calendar = () => {
         </div>
       </div>
 
-      {/* Motivation Quote */}
       {streakData.currentStreak > 0 && (
         <div className="card bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-xl">
           <div className="card-body text-center">
-            <div className="text-4xl mb-3">ðŸ’«</div>
+            <div className="text-4xl mb-3">💫</div>
             <p className="text-lg font-medium">
               {getCelebrationMessage(streakData.currentStreak)}
             </p>
@@ -140,13 +136,12 @@ const Calendar = () => {
         </div>
       )}
 
-      {/* Coming Soon Features */}
       <div className="card bg-base-100 shadow-xl">
         <div className="card-body">
           <h3 className="card-title text-lg mb-3">Coming Soon</h3>
           <div className="space-y-3">
             <div className="flex items-start gap-3">
-              <div className="badge badge-primary badge-lg">ðŸ“…</div>
+              <div className="badge badge-primary badge-lg">📅</div>
               <div>
                 <p className="font-medium">Visual Calendar</p>
                 <p className="text-sm text-base-content/60">
@@ -155,7 +150,7 @@ const Calendar = () => {
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="badge badge-secondary badge-lg">â°</div>
+              <div className="badge badge-secondary badge-lg">⏰</div>
               <div>
                 <p className="font-medium">Daily Reminders</p>
                 <p className="text-sm text-base-content/60">
@@ -164,7 +159,7 @@ const Calendar = () => {
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="badge badge-accent badge-lg">ðŸŽ¯</div>
+              <div className="badge badge-accent badge-lg">🎯</div>
               <div>
                 <p className="font-medium">Custom Goals</p>
                 <p className="text-sm text-base-content/60">
@@ -173,7 +168,7 @@ const Calendar = () => {
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="badge badge-info badge-lg">ðŸ˜´</div>
+              <div className="badge badge-info badge-lg">😴</div>
               <div>
                 <p className="font-medium">Rest Day Support</p>
                 <p className="text-sm text-base-content/60">
@@ -185,7 +180,6 @@ const Calendar = () => {
         </div>
       </div>
 
-      {/* Stats */}
       <div className="stats stats-vertical lg:stats-horizontal shadow w-full">
         <div className="stat">
           <div className="stat-figure text-primary">
