@@ -1,6 +1,5 @@
 import React from 'react';
 import { TrendingDown, Brain, BarChart3, Calendar } from 'lucide-react';
-import { cn } from '../utils/helpers';
 
 const Navigation = ({ activeModule, onModuleChange }) => {
   const modules = [
@@ -8,30 +7,26 @@ const Navigation = ({ activeModule, onModuleChange }) => {
       id: 'weight', 
       label: 'Weight', 
       icon: TrendingDown,
-      color: 'text-blue-500'
     },
     { 
       id: 'psychology', 
       label: 'Mind', 
       icon: Brain,
-      color: 'text-purple-500'
     },
     { 
       id: 'analytics', 
       label: 'Stats', 
       icon: BarChart3,
-      color: 'text-green-500'
     },
     { 
       id: 'calendar', 
       label: 'Streak', 
       icon: Calendar,
-      color: 'text-orange-500'
     },
   ];
 
   return (
-    <nav className="btm-nav btm-nav-lg bg-base-100 shadow-2xl rounded-2xl border border-base-200">
+    <div className="bg-base-100 rounded-2xl shadow-2xl border border-base-200 p-2 grid grid-cols-4 gap-1">
       {modules.map((module) => {
         const Icon = module.icon;
         const isActive = activeModule === module.id;
@@ -40,22 +35,21 @@ const Navigation = ({ activeModule, onModuleChange }) => {
           <button
             key={module.id}
             onClick={() => onModuleChange(module.id)}
-            className={cn(
-              "touch-manipulation transition-all duration-200",
-              isActive && "active bg-primary text-primary-content"
-            )}
+            className={`
+              flex flex-col items-center justify-center gap-1 p-3 rounded-xl
+              transition-all duration-200 active:scale-95
+              ${isActive 
+                ? 'bg-primary text-primary-content shadow-lg' 
+                : 'text-base-content/60 hover:bg-base-200'
+              }
+            `}
           >
-            <Icon className={cn(
-              "w-6 h-6 mb-1",
-              !isActive && module.color
-            )} />
-            <span className="text-xs font-medium btm-nav-label">
-              {module.label}
-            </span>
+            <Icon className="w-6 h-6" />
+            <span className="text-xs font-medium">{module.label}</span>
           </button>
         );
       })}
-    </nav>
+    </div>
   );
 };
 
